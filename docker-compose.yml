@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: dni_api_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-dni_api}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    ports:
+      - "5432:5432"
+
+  api:
+    build: .
+    container_name: dni_api
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg2://postgres:postgres@db:5432/dni_api}
+      API_KEY: ${API_KEY}
+      PERUDEVS_TOKEN: ${PERUDEVS_TOKEN}
+      PERUDEVS_BASE_URL: ${PERUDEVS_BASE_URL:-https://api.perudevs.com}
+      PERUDEVS_TIMEOUT: ${PERUDEVS_TIMEOUT:-10}
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
+
