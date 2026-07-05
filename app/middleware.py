@@ -23,6 +23,10 @@ class ApiAuthLogMiddleware(BaseHTTPMiddleware):
         response = None
         api_key = None
         raw_key = request.headers.get("x-api-key")
+        dni_consultado = None
+        path_parts = [part for part in request.url.path.split("/") if part]
+        if len(path_parts) >= 2 and path_parts[0] == "dni":
+            dni_consultado = path_parts[1]
 
         with SessionLocal() as db:
             if raw_key:
@@ -40,7 +44,7 @@ class ApiAuthLogMiddleware(BaseHTTPMiddleware):
         finally:
             duration_ms = int((time.perf_counter() - start) * 1000)
             with SessionLocal() as db:
-                if api_key is not None and response is not None:
+                if api_key is not None and response is not None and response.status_code < 400:
                     api_key.consultas_realizadas = (api_key.consultas_realizadas or 0) + 1
                     api_key.ultimo_uso = datetime.now(timezone.utc)
                     api_key.ultima_ip = request.client.host if request.client else None
@@ -48,7 +52,7 @@ class ApiAuthLogMiddleware(BaseHTTPMiddleware):
                 create_api_log(
                     db,
                     api_key_id=api_key.id if api_key else None,
-                    dni_consultado=request.path_params.get("dni") if request.path_params else None,
+                    dni_consultado=dni_consultado,
                     endpoint=request.url.path,
                     metodo=request.method,
                     ip=request.client.host if request.client else None,

@@ -5,13 +5,13 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.database import get_db, ping_database
+from app.dependencies import get_current_api_key
 from app.models import DniConsult
 from app.schemas import DniResponse, DniSearchResult, HealthResponse
-from app.security import verify_api_key
 from app.services.perudevs import PeruDevsClient, PeruDevsError, PeruDevsNotFound
 
 
-router = APIRouter(prefix="", tags=["DNI"], dependencies=[Depends(verify_api_key)])
+router = APIRouter(prefix="", tags=["DNI"], dependencies=[Depends(get_current_api_key)])
 
 
 def validate_dni(dni: str) -> str:
