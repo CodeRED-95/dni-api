@@ -40,9 +40,14 @@ dni-api/
 
 1. Copia `.env.example` a `.env`.
 2. Completa estos valores:
-   - `API_KEY`
-   - `PERUDEVS_TOKEN`
-   - Opcionalmente `DATABASE_URL`, `PERUDEVS_BASE_URL`, `PERUDEVS_TIMEOUT`
+- `API_KEY`
+- `API_ADMIN_KEY`
+- `DEFAULT_DAILY_LIMIT`
+- `DEFAULT_MINUTE_LIMIT`
+- `TOKEN_LENGTH`
+- `HASH_SECRET`
+- `PERUDEVS_TOKEN`
+- Opcionalmente `DATABASE_URL`, `PERUDEVS_BASE_URL`, `PERUDEVS_TIMEOUT`
 
 Ejemplo:
 
@@ -51,7 +56,11 @@ POSTGRES_DB=dni_api
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/dni_api
-API_KEY=mi_clave_segura
+API_ADMIN_KEY=mi_admin_key_segura
+DEFAULT_DAILY_LIMIT=1000
+DEFAULT_MINUTE_LIMIT=60
+TOKEN_LENGTH=64
+HASH_SECRET=mi_secreto_largo_y_unico
 PERUDEVS_TOKEN=mi_token_real
 PERUDEVS_BASE_URL=https://api.perudevs.com/api/v1/dni/complete
 PERUDEVS_TIMEOUT=10
@@ -95,6 +104,16 @@ X-API-Key: mi_clave_segura
 
 Si la clave es incorrecta, la API responde `401`.
 
+## Administración
+
+Los endpoints `/admin/*` usan `X-Admin-API-Key`.
+
+Ejemplo:
+
+```http
+X-Admin-API-Key: mi_admin_key_segura
+```
+
 ## Probar en Swagger
 
 1. Abre `/docs`
@@ -122,6 +141,35 @@ curl -H "X-API-Key: mi_clave_segura" http://localhost:8000/dni/12345678/refresh
 
 ```bash
 curl -H "X-API-Key: mi_clave_segura" "http://localhost:8000/buscar?nombre=juan"
+```
+
+## Ejemplos
+
+### curl
+
+```bash
+curl -H "X-API-Key: TU_API_KEY" http://localhost:8000/dni/12345678
+```
+
+### Python
+
+```python
+import requests
+
+r = requests.get(
+    "http://localhost:8000/dni/12345678",
+    headers={"X-API-Key": "TU_API_KEY"},
+    timeout=30,
+)
+print(r.json())
+```
+
+### JavaScript
+
+```javascript
+fetch("http://localhost:8000/dni/12345678", {
+  headers: { "X-API-Key": "TU_API_KEY" }
+}).then(r => r.json()).then(console.log)
 ```
 
 ## Notas de despliegue

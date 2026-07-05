@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -47,19 +47,21 @@ def save_record(db: Session, payload: dict) -> DniConsult:
 
 
 @router.get("/health", response_model=HealthResponse)
-def health(db: Session = Depends(get_db)):
+def health(request: Request, db: Session = Depends(get_db)):
     try:
         ping_database()
     except Exception:
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="La base de datos no está disponible.")
+    request.state.origen = "Base Local"
     return HealthResponse(status="ok", database="ok")
 
 
 @router.get("/dni/{dni}", response_model=DniResponse)
-def get_dni(dni: str, db: Session = Depends(get_db)):
+def get_dni(dni: str, request: Request, db: Session = Depends(get_db)):
     dni = validate_dni(dni)
     record = db.query(DniConsult).filter(DniConsult.dni == dni).one_or_none()
     if record:
+        request.state.origen = "Base Local"
         return serialize(record)
 
     client = PeruDevsClient()
@@ -71,11 +73,12 @@ def get_dni(dni: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"No se pudo consultar PeruDevs: {exc}")
 
     record = save_record(db, payload)
+    request.state.origen = "PeruDevs"
     return serialize(record)
 
 
 @router.get("/dni/{dni}/refresh", response_model=DniResponse)
-def refresh_dni(dni: str, db: Session = Depends(get_db)):
+def refresh_dni(dni: str, request: Request, db: Session = Depends(get_db)):
     dni = validate_dni(dni)
     client = PeruDevsClient()
     try:
@@ -86,12 +89,14 @@ def refresh_dni(dni: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"No se pudo consultar PeruDevs: {exc}")
 
     record = save_record(db, payload)
+    request.state.origen = "PeruDevs"
     return serialize(record)
 
 
 @router.get("/buscar", response_model=list[DniSearchResult])
-def buscar(nombre: str = Query(..., min_length=2), db: Session = Depends(get_db)):
+def buscar(request: Request, nombre: str = Query(..., min_length=2), db: Session = Depends(get_db)):
     like = f"%{nombre.strip()}%"
+    request.state.origen = "Base Local"
     results = (
         db.query(DniConsult)
         .filter(
