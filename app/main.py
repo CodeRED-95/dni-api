@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Response
 from fastapi.openapi.utils import get_openapi
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.database import Base, engine
@@ -16,6 +17,20 @@ app = FastAPI(
     description="API profesional para consulta de DNI en Perú con caché local y fallback a PeruDevs.",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://docs.codered.host",
+        "https://codered.host",
+    ],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.add_middleware(ApiAuthLogMiddleware)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
@@ -34,6 +49,11 @@ def health():
 
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon():
+    return Response(status_code=204)
+
+
+@app.options("/{full_path:path}", include_in_schema=False)
+def options_handler(full_path: str):
     return Response(status_code=204)
 
 
