@@ -4,7 +4,7 @@ from fastapi import Depends, Header, HTTPException, Request, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.auth import can_use_api_key, get_api_key_by_raw, validate_admin_key
+from app.auth import can_use_api_key, extract_public_api_key, get_api_key_by_raw, validate_admin_key
 from app.database import SessionLocal
 from app.models import ApiKey, ApiLog
 
@@ -19,9 +19,9 @@ def get_db():
 
 def get_current_api_key(
     request: Request,
-    x_api_key: str = Header(default=""),
     db: Session = Depends(get_db),
 ) -> ApiKey:
+    x_api_key = extract_public_api_key(request)
     if not x_api_key:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="API Key requerida.")
     api_key = get_api_key_by_raw(db, x_api_key)

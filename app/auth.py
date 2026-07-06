@@ -6,7 +6,7 @@ import string
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import HTTPException, status
+from fastapi import HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.models import ApiKey
@@ -75,6 +75,14 @@ def validate_admin_key(provided_key: str) -> bool:
     if not hmac.compare_digest(client_key, server_key):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Admin API Key inválida.")
     return True
+
+
+def extract_public_api_key(request: Request) -> str:
+    authorization = (request.headers.get("authorization") or "").strip()
+    if authorization.lower().startswith("bearer "):
+        return authorization[7:].strip()
+    query_key = (request.query_params.get("apikey") or request.query_params.get("token") or "").strip()
+    return query_key
 
 
 def get_api_key_by_raw(session: Session, raw_key: str) -> Optional[ApiKey]:

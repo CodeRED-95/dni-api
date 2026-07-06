@@ -129,7 +129,17 @@ X-API-Key: mi_clave_segura
 
 Si la clave es incorrecta, la API responde `401`.
 
-También se acepta `Authorization: Bearer ...`, `?apikey=...` y `?token=...`.
+También se acepta:
+
+- `Authorization: Bearer MI_API_KEY`
+- `?apikey=MI_API_KEY`
+- `?token=MI_API_KEY`
+
+Prioridad de lectura:
+
+1. `Authorization: Bearer ...`
+2. `?apikey=...`
+3. `?token=...`
 
 ## Administración
 
