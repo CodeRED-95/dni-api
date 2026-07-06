@@ -141,6 +141,21 @@ Prioridad de lectura:
 2. `?apikey=...`
 3. `?token=...`
 
+La autenticación se aplica solo a las rutas de consulta DNI, por ejemplo:
+
+```http
+GET /dni/71218478?apikey=MI_API_KEY
+Authorization: Bearer MI_API_KEY
+```
+
+Las rutas públicas siguen sin pedir clave:
+
+- `/`
+- `/web`
+- `/docs`
+- `/openapi.json`
+- `/redoc`
+
 ## Administración
 
 Los endpoints `/admin/*` usan `X-Admin-Key`.

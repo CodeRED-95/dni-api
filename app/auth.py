@@ -81,7 +81,12 @@ def extract_public_api_key(request: Request) -> str:
     authorization = (request.headers.get("authorization") or "").strip()
     if authorization.lower().startswith("bearer "):
         return authorization[7:].strip()
-    query_key = (request.query_params.get("apikey") or request.query_params.get("token") or "").strip()
+    query_key = (request.query_params.get("apikey") or "").strip()
+    if query_key:
+        return query_key
+    query_token = (request.query_params.get("token") or "").strip()
+    if query_token:
+        return query_token
     return query_key
 
 

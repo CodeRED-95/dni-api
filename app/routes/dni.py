@@ -12,7 +12,7 @@ from app.services.cache import get_json, set_json
 from app.services.perudevs import PeruDevsClient, PeruDevsError, PeruDevsNotFound
 
 
-router = APIRouter(prefix="", tags=["DNI"], dependencies=[Depends(get_current_api_key)])
+router = APIRouter(prefix="", tags=["DNI"])
 
 
 def validate_dni(dni: str) -> str:
@@ -58,7 +58,7 @@ def health(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/dni/{dni}", response_model=DniResponse)
-def get_dni(dni: str, request: Request, db: Session = Depends(get_db)):
+def get_dni(dni: str, request: Request, db: Session = Depends(get_db), api_key=Depends(get_current_api_key)):
     dni = validate_dni(dni)
     cache_key = f"dni:{dni}"
     cached = get_json(cache_key)
@@ -89,7 +89,7 @@ def get_dni(dni: str, request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/dni/{dni}/refresh", response_model=DniResponse)
-def refresh_dni(dni: str, request: Request, db: Session = Depends(get_db)):
+def refresh_dni(dni: str, request: Request, db: Session = Depends(get_db), api_key=Depends(get_current_api_key)):
     dni = validate_dni(dni)
     client = PeruDevsClient()
     try:
