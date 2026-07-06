@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
 
@@ -30,6 +30,11 @@ def health():
     db_ok = True
     redis_ok = "ok" if redis_ping() else None
     return {"status": "ok" if db_ok else "degraded", "database": "ok" if db_ok else "fail", "redis": redis_ok}
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return Response(status_code=204)
 
 
 def custom_openapi():
