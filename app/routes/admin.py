@@ -33,8 +33,19 @@ def create_api_key(payload: ApiKeyCreateRequest, db: Session = Depends(get_db)):
     db.add(api_key)
     db.commit()
     db.refresh(api_key)
-    response = ApiKeyCreatedResponse.model_validate(api_key)
-    return response.model_copy(update={"api_key": raw_key})
+    return ApiKeyCreatedResponse(
+        id=api_key.id,
+        nombre=api_key.nombre,
+        activo=api_key.activo,
+        descripcion=api_key.descripcion,
+        fecha_creacion=api_key.fecha_creacion,
+        ultimo_uso=api_key.ultimo_uso,
+        limite_diario=api_key.limite_diario,
+        limite_por_minuto=api_key.limite_por_minuto,
+        consultas_realizadas=api_key.consultas_realizadas,
+        ultima_ip=api_key.ultima_ip,
+        api_key=raw_key,
+    )
 
 
 @router.get("/api-keys", response_model=list[ApiKeyResponse])
@@ -90,8 +101,19 @@ def regenerate_api_key(api_key_id: int, db: Session = Depends(get_db)):
     api_key.ultimo_uso = None
     db.commit()
     db.refresh(api_key)
-    response = ApiKeyCreatedResponse.model_validate(api_key)
-    return response.model_copy(update={"api_key": raw_key})
+    return ApiKeyCreatedResponse(
+        id=api_key.id,
+        nombre=api_key.nombre,
+        activo=api_key.activo,
+        descripcion=api_key.descripcion,
+        fecha_creacion=api_key.fecha_creacion,
+        ultimo_uso=api_key.ultimo_uso,
+        limite_diario=api_key.limite_diario,
+        limite_por_minuto=api_key.limite_por_minuto,
+        consultas_realizadas=api_key.consultas_realizadas,
+        ultima_ip=api_key.ultima_ip,
+        api_key=raw_key,
+    )
 
 
 @router.get("/api-keys/{api_key_id}/stats", response_model=ApiKeyStatsResponse)

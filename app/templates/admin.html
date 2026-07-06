@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DNI Admin</title>
+  <link rel="stylesheet" href="/static/admin.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Admin Panel</p>
+        <h1>Administración de tokens</h1>
+        <p class="muted">Genera, activa, desactiva y elimina tokens. El admin key se usa solo en tu navegador.</p>
+      </div>
+    </header>
+    <section class="panel">
+      <div class="row">
+        <label>X-Admin-Key <input id="adminKey" type="password" placeholder="API_ADMIN_KEY"></label>
+        <div class="actions">
+          <button id="saveAdminKey" class="secondary" type="button">Guardar admin key localmente</button>
+          <button id="clearAdminKey" class="ghost" type="button">Borrar</button>
+        </div>
+      </div>
+    </section>
+    <section class="panel">
+      <form id="createForm" class="grid">
+        <label>Nombre <input id="nombre" type="text" placeholder="cliente-a" required></label>
+        <label>Límite diario <input id="dailyLimit" type="number" min="1" value="1000"></label>
+        <label>Límite por minuto <input id="minuteLimit" type="number" min="1" value="60"></label>
+        <label>Descripción <input id="descripcion" type="text" placeholder="Acceso para cliente A"></label>
+        <button type="submit">Generar token</button>
+      </form>
+      <div id="createMessage" class="message muted">Listo para generar un token.</div>
+    </section>
+    <section class="panel">
+      <div class="table-toolbar"><h2>Tokens</h2><button id="refreshBtn" class="secondary" type="button">Refrescar</button></div>
+      <div class="table-wrap"><table><thead><tr><th>ID</th><th>Nombre</th><th>Preview</th><th>Estado</th><th>Total consultas</th><th>Límite diario</th><th>Límite minuto</th><th>Creado</th><th>Último uso</th><th>Acciones</th></tr></thead><tbody id="tokensBody"></tbody></table></div>
+    </section>
+    <section class="panel"><div id="status" class="message muted">Sin actividad.</div></section>
+    <dialog id="tokenDialog" class="token-dialog"><div class="token-dialog-body"><p class="eyebrow">Token generado</p><h2>Este token solo se mostrará una vez</h2><p class="muted">Guárdelo en un lugar seguro.</p><pre id="tokenDialogText" class="token-box"></pre><div class="dialog-actions"><button id="tokenDialogCopy" type="button">Copiar</button><button id="tokenDialogClose" type="button" class="secondary">Cerrar</button></div></div></dialog>
+  </main>
+  <script src="/static/admin.js"></script>
+</body>
+</html>

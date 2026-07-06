@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DNI API</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="page">
+    <section class="card hero">
+      <div>
+        <p class="eyebrow">DNI API</p>
+        <h1>Consulta DNI desde el navegador</h1>
+        <p class="muted">Ingresa tu API Key y un DNI de 8 dígitos para consultar la información.</p>
+      </div>
+    </section>
+    <section class="card form-card">
+      <form id="ruc-form">
+        <label>API Key <input id="apiKey" type="password" placeholder="X-API-Key" required></label>
+        <label>DNI <input id="dni" type="text" placeholder="12345678" maxlength="8" pattern="\d{8}" required></label>
+        <button type="submit">Consultar</button>
+      </form>
+    </section>
+    <section class="card result-card">
+      <div id="status" class="status muted">Esperando consulta...</div>
+      <pre id="output">{}</pre>
+    </section>
+  </main>
+  <script src="/static/web.js"></script>
+</body>
+</html>

@@ -8,6 +8,7 @@ from app.database import get_db, ping_database
 from app.dependencies import get_current_api_key
 from app.models import DniConsult
 from app.schemas import DniResponse, DniSearchResult, HealthResponse
+from app.services.cache import get_json, set_json
 from app.services.perudevs import PeruDevsClient, PeruDevsError, PeruDevsNotFound
 
 
@@ -59,10 +60,18 @@ def health(request: Request, db: Session = Depends(get_db)):
 @router.get("/dni/{dni}", response_model=DniResponse)
 def get_dni(dni: str, request: Request, db: Session = Depends(get_db)):
     dni = validate_dni(dni)
+    cache_key = f"dni:{dni}"
+    cached = get_json(cache_key)
+    if cached is not None:
+        request.state.origen = "Redis"
+        return cached
+
     record = db.query(DniConsult).filter(DniConsult.dni == dni).one_or_none()
     if record:
         request.state.origen = "Base Local"
-        return serialize(record)
+        data = serialize(record).model_dump(mode="json")
+        set_json(cache_key, data)
+        return data
 
     client = PeruDevsClient()
     try:
@@ -74,7 +83,9 @@ def get_dni(dni: str, request: Request, db: Session = Depends(get_db)):
 
     record = save_record(db, payload)
     request.state.origen = "PeruDevs"
-    return serialize(record)
+    data = serialize(record).model_dump(mode="json")
+    set_json(cache_key, data)
+    return data
 
 
 @router.get("/dni/{dni}/refresh", response_model=DniResponse)
@@ -90,7 +101,9 @@ def refresh_dni(dni: str, request: Request, db: Session = Depends(get_db)):
 
     record = save_record(db, payload)
     request.state.origen = "PeruDevs"
-    return serialize(record)
+    data = serialize(record).model_dump(mode="json")
+    set_json(f"dni:{dni}", data)
+    return data
 
 
 @router.get("/buscar", response_model=list[DniSearchResult])

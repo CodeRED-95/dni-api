@@ -1,10 +1,13 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
+from fastapi.staticfiles import StaticFiles
 
 from app.database import Base, engine
 from app.middleware import ApiAuthLogMiddleware
 from app.routes.admin import router as admin_router
 from app.routes.dni import router as dni_router
+from app.services.cache import ping as redis_ping
+from app.web import router as web_router
 
 
 app = FastAPI(
@@ -14,11 +17,19 @@ app = FastAPI(
 )
 
 app.add_middleware(ApiAuthLogMiddleware)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
 @app.on_event("startup")
 def startup() -> None:
     Base.metadata.create_all(bind=engine)
+
+
+@app.get("/health")
+def health():
+    db_ok = True
+    redis_ok = "ok" if redis_ping() else None
+    return {"status": "ok" if db_ok else "degraded", "database": "ok" if db_ok else "fail", "redis": redis_ok}
 
 
 def custom_openapi():
@@ -54,3 +65,4 @@ def custom_openapi():
 app.openapi = custom_openapi
 app.include_router(dni_router)
 app.include_router(admin_router)
+app.include_router(web_router)

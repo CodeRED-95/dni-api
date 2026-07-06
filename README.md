@@ -11,6 +11,7 @@ API profesional en FastAPI para consulta de DNI con prioridad en base local y fa
 - Servicio separado para PeruDevs
 - Caché local de respuestas exitosas
 - Búsqueda local por nombre o apellidos
+- Redis para caché transparente de consultas DNI
 - Docker y Docker Compose listos para Debian o Portainer
 
 ## Estructura
@@ -22,10 +23,18 @@ dni-api/
 │   ├── database.py
 │   ├── models.py
 │   ├── schemas.py
-│   ├── security.py
+│   ├── auth.py
+│   ├── cache.py
+│   ├── logging.py
+│   ├── web.py
+│   ├── middleware/
 │   ├── routes/
+│   │   ├── admin.py
 │   │   └── dni.py
 │   └── services/
+│       ├── auth.py
+│       ├── cache.py
+│       ├── logging.py
 │       └── perudevs.py
 ├── sql/
 │   └── schema.sql
@@ -47,6 +56,11 @@ dni-api/
 - `TOKEN_LENGTH`
 - `HASH_SECRET`
 - `PERUDEVS_TOKEN`
+- `REDIS_URL`
+- `REDIS_ENABLED`
+- `CACHE_TTL_SECONDS`
+- `PGADMIN_DEFAULT_EMAIL`
+- `PGADMIN_DEFAULT_PASSWORD`
 - Opcionalmente `DATABASE_URL`, `PERUDEVS_BASE_URL`, `PERUDEVS_TIMEOUT`
 
 Ejemplo:
@@ -55,7 +69,12 @@ Ejemplo:
 POSTGRES_DB=dni_api
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
-DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/dni_api
+PGADMIN_DEFAULT_EMAIL=admin@local
+PGADMIN_DEFAULT_PASSWORD=admin
+DATABASE_URL=postgresql+psycopg://postgres:postgres@postgres:5432/dni_api
+REDIS_URL=redis://redis:6379/0
+REDIS_ENABLED=true
+CACHE_TTL_SECONDS=3600
 API_ADMIN_KEY=mi_admin_key_segura
 DEFAULT_DAILY_LIMIT=1000
 DEFAULT_MINUTE_LIMIT=60
@@ -75,8 +94,11 @@ docker compose up -d --build
 La API quedará disponible en:
 
 - `http://localhost:8000`
+- `http://localhost:8002`
 - Swagger: `http://localhost:8000/docs`
 - Redoc: `http://localhost:8000/redoc`
+- Web: `http://localhost:8002/web`
+- Admin Web: `http://localhost:8002/admin-web`
 
 ## Endpoints
 
@@ -104,6 +126,8 @@ X-API-Key: mi_clave_segura
 
 Si la clave es incorrecta, la API responde `401`.
 
+También se acepta `Authorization: Bearer ...`, `?apikey=...` y `?token=...`.
+
 ## Administración
 
 Los endpoints `/admin/*` usan `X-Admin-API-Key`.
@@ -123,7 +147,27 @@ X-Admin-API-Key: mi_admin_key_segura
    - `GET /health`
    - `GET /dni/12345678`
    - `GET /dni/12345678/refresh`
-   - `GET /buscar?nombre=juan`
+- `GET /buscar?nombre=juan`
+
+## Cloudflare Tunnel
+
+Para publicar `https://dni.midominio.com` con Cloudflare Tunnel:
+
+1. Instala `cloudflared` en el servidor.
+2. Autentica el túnel:
+   ```bash
+   cloudflared tunnel login
+   ```
+3. Crea un túnel:
+   ```bash
+   cloudflared tunnel create dni-api
+   ```
+4. Asigna el hostname:
+   ```bash
+   cloudflared tunnel route dns dni-api dni.midominio.com
+   ```
+5. Configura el ingress para apuntar a `http://localhost:8002`.
+6. Ejecuta el túnel con el archivo de configuración.
 
 ## Consultar un DNI
 

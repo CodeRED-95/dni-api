@@ -10,7 +10,7 @@ from app.database import SessionLocal
 from app.logging_utils import create_api_log
 
 
-PUBLIC_PATH_PREFIXES = ("/docs", "/redoc", "/openapi.json")
+PUBLIC_PATH_PREFIXES = ("/docs", "/redoc", "/openapi.json", "/health", "/web", "/admin-web", "/static")
 SKIP_AUTH_PREFIXES = ("/admin",)
 
 

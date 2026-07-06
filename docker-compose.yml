@@ -1,7 +1,7 @@
 services:
-  db:
+  postgres:
     image: postgres:16-alpine
-    container_name: dni-api-db
+    container_name: dni-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-dni_api}
@@ -13,12 +13,33 @@ services:
     ports:
       - "5433:5432"
 
+  redis:
+    image: redis:7-alpine
+    container_name: dni-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - dni_redis_data:/data
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    container_name: dni-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+    ports:
+      - "8082:80"
+    depends_on:
+      - postgres
+
   api:
     build: .
     container_name: dni-api
     restart: unless-stopped
     depends_on:
-      - db
+      - postgres
+      - redis
     env_file:
       - .env
     ports:
@@ -26,3 +47,4 @@ services:
 
 volumes:
   dni_postgres_data:
+  dni_redis_data:
