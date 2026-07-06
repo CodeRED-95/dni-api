@@ -52,8 +52,11 @@ def get_current_api_key(
     return api_key
 
 
-def require_admin_key(x_admin_api_key: str = Header(default="", alias="X-Admin-API-Key")) -> None:
-    validate_admin_key(x_admin_api_key)
+def require_admin_key(
+    x_admin_key: str | None = Header(default=None, alias="X-Admin-Key"),
+):
+    validate_admin_key(x_admin_key or "")
+    return True
 
 
 def require_localhost(request: Request) -> None:

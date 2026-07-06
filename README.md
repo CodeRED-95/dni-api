@@ -133,12 +133,12 @@ También se acepta `Authorization: Bearer ...`, `?apikey=...` y `?token=...`.
 
 ## Administración
 
-Los endpoints `/admin/*` usan `X-Admin-API-Key`.
+Los endpoints `/admin/*` usan `X-Admin-Key`.
 
 Ejemplo:
 
 ```http
-X-Admin-API-Key: mi_admin_key_segura
+X-Admin-Key: mi_admin_key_segura
 ```
 
 ## Probar en Swagger
@@ -209,6 +209,20 @@ Si aparece un contenedor antiguo como `dni-api-db`:
 
 ```bash
 docker rm -f dni-api-db
+```
+
+Verificar rápidamente que el contenedor usa la misma `API_ADMIN_KEY` que el `.env`:
+
+```bash
+grep '^API_ADMIN_KEY=' .env
+docker compose exec api env | grep API_ADMIN_KEY
+```
+
+Si ambos valores difieren, recrea los contenedores:
+
+```bash
+docker compose down --remove-orphans
+docker compose up -d --build
 ```
 
 ## Consultar un DNI
