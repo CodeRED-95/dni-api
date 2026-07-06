@@ -5,14 +5,12 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.admin_schemas import ApiKeyCreateRequest, ApiKeyCreatedResponse, ApiKeyResponse, ApiKeyStatsResponse, ApiLogResponse
-from app.auth import DEFAULT_DAILY_LIMIT, DEFAULT_MINUTE_LIMIT, generate_api_key, hash_api_key, debug_admin_key_state
-from app.dependencies import get_db, require_admin_key
+from app.auth import DEFAULT_DAILY_LIMIT, DEFAULT_MINUTE_LIMIT, generate_api_key, hash_api_key
+from app.dependencies import get_db, require_admin_key, require_localhost
 from app.models import ApiKey, ApiLog
 
 
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin_key)])
-
-debug_admin_key_state()
 
 
 def _api_key_to_response(api_key: ApiKey) -> ApiKeyResponse:
@@ -137,3 +135,15 @@ def api_key_stats(api_key_id: int, db: Session = Depends(get_db)):
 @router.get("/api-keys/{api_key_id}/logs", response_model=list[ApiLogResponse])
 def api_key_logs(api_key_id: int, db: Session = Depends(get_db)):
     return db.query(ApiLog).filter(ApiLog.api_key_id == api_key_id).order_by(ApiLog.fecha.desc()).all()
+
+
+@router.get("/debug/env", dependencies=[Depends(require_localhost)])
+def debug_env():
+    from app.auth import API_ADMIN_KEY
+
+    normalized = (API_ADMIN_KEY or "").strip().replace("\r", "").replace("\n", "")
+    return {
+        "API_ADMIN_KEY configurada": bool(normalized),
+        "Longitud": len(normalized),
+        "Últimos 4 caracteres": normalized[-4:] if normalized else "",
+    }

@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.models import ApiKey
 
 
-load_dotenv()
+load_dotenv(override=False)
 
 API_ADMIN_KEY = os.getenv("API_ADMIN_KEY", "")
 DEFAULT_DAILY_LIMIT = int(os.getenv("DEFAULT_DAILY_LIMIT", "1000"))
@@ -25,11 +25,12 @@ def _mask_length(value: str) -> int:
     return len(value or "")
 
 
-def debug_admin_key_state() -> None:
-    configured = bool(API_ADMIN_KEY.strip())
-    print(
-        f"[auth] API_ADMIN_KEY configured={configured} length={_mask_length(API_ADMIN_KEY)}"
-    )
+def _mask_key(value: str) -> str:
+    value = (value or "").strip()
+    if not value:
+        return ""
+    tail = value[-4:] if len(value) >= 4 else value
+    return f"{'*' * max(len(value) - 4, 0)}{tail}"
 
 
 def _require_hash_secret() -> None:
@@ -58,17 +59,20 @@ def verify_raw_api_key(raw_key: str, stored_hash: str) -> bool:
 
 
 def is_admin_key_valid(provided_key: str) -> bool:
-    return bool(API_ADMIN_KEY.strip()) and hmac.compare_digest((provided_key or "").strip(), API_ADMIN_KEY.strip())
+    server_key = (API_ADMIN_KEY or "").strip().replace("\r", "").replace("\n", "")
+    client_key = (provided_key or "").strip().replace("\r", "").replace("\n", "")
+    return bool(server_key) and hmac.compare_digest(client_key, server_key)
 
 
 def validate_admin_key(provided_key: str) -> bool:
-    debug_admin_key_state()
-    if not API_ADMIN_KEY.strip():
+    server_key = (API_ADMIN_KEY or "").strip().replace("\r", "").replace("\n", "")
+    client_key = (provided_key or "").strip().replace("\r", "").replace("\n", "")
+    if not server_key:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="API_ADMIN_KEY no configurada en el servidor",
         )
-    if not hmac.compare_digest((provided_key or "").strip(), API_ADMIN_KEY.strip()):
+    if not hmac.compare_digest(client_key, server_key):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Admin API Key inválida.")
     return True
 

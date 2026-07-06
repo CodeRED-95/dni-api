@@ -54,3 +54,9 @@ def get_current_api_key(
 
 def require_admin_key(x_admin_api_key: str = Header(default="", alias="X-Admin-API-Key")) -> None:
     validate_admin_key(x_admin_api_key)
+
+
+def require_localhost(request: Request) -> None:
+    client_host = request.client.host if request.client else None
+    if client_host not in {"127.0.0.1", "::1", "localhost"}:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Disponible solo en localhost.")
