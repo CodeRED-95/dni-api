@@ -49,7 +49,6 @@ dni-api/
 
 1. Copia `.env.example` a `.env`.
 2. Completa estos valores:
-- `API_KEY`
 - `API_ADMIN_KEY`
 - `DEFAULT_DAILY_LIMIT`
 - `DEFAULT_MINUTE_LIMIT`
@@ -61,7 +60,9 @@ dni-api/
 - `CACHE_TTL_SECONDS`
 - `PGADMIN_DEFAULT_EMAIL`
 - `PGADMIN_DEFAULT_PASSWORD`
-- Opcionalmente `DATABASE_URL`, `PERUDEVS_BASE_URL`, `PERUDEVS_TIMEOUT`
+- `DATABASE_URL`
+- `PERUDEVS_BASE_URL`
+- `PERUDEVS_TIMEOUT`
 
 Ejemplo:
 
@@ -88,6 +89,7 @@ PERUDEVS_TIMEOUT=10
 ## Levantar con Docker Compose
 
 ```bash
+docker compose down --remove-orphans
 docker compose up -d --build
 ```
 
@@ -99,6 +101,7 @@ La API quedará disponible en:
 - Redoc: `http://localhost:8000/redoc`
 - Web: `http://localhost:8002/web`
 - Admin Web: `http://localhost:8002/admin-web`
+- pgAdmin: `http://localhost:8082`
 
 ## Endpoints
 
@@ -147,7 +150,7 @@ X-Admin-API-Key: mi_admin_key_segura
    - `GET /health`
    - `GET /dni/12345678`
    - `GET /dni/12345678/refresh`
-- `GET /buscar?nombre=juan`
+   - `GET /buscar?nombre=juan`
 
 ## Cloudflare Tunnel
 
@@ -168,6 +171,45 @@ Para publicar `https://dni.midominio.com` con Cloudflare Tunnel:
    ```
 5. Configura el ingress para apuntar a `http://localhost:8002`.
 6. Ejecuta el túnel con el archivo de configuración.
+
+## Validación final
+
+Ver `.env` local:
+
+```bash
+grep API_ADMIN_KEY .env
+```
+
+Ver variables dentro del contenedor:
+
+```bash
+docker compose exec api env | grep API_ADMIN_KEY
+```
+
+Ver puertos:
+
+```bash
+docker ps
+```
+
+Probar docs:
+
+```bash
+curl http://localhost:8002/docs
+```
+
+Probar admin key:
+
+```bash
+curl -X GET http://localhost:8002/admin/tokens \
+  -H "X-Admin-Key: TU_API_ADMIN_KEY"
+```
+
+Si aparece un contenedor antiguo como `dni-api-db`:
+
+```bash
+docker rm -f dni-api-db
+```
 
 ## Consultar un DNI
 

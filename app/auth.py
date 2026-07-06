@@ -3,12 +3,10 @@ import hmac
 import os
 import secrets
 import string
-from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import HTTPException, status
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models import ApiKey
@@ -21,6 +19,17 @@ DEFAULT_DAILY_LIMIT = int(os.getenv("DEFAULT_DAILY_LIMIT", "1000"))
 DEFAULT_MINUTE_LIMIT = int(os.getenv("DEFAULT_MINUTE_LIMIT", "60"))
 TOKEN_LENGTH = int(os.getenv("TOKEN_LENGTH", "64"))
 HASH_SECRET = os.getenv("HASH_SECRET", "")
+
+
+def _mask_length(value: str) -> int:
+    return len(value or "")
+
+
+def debug_admin_key_state() -> None:
+    configured = bool(API_ADMIN_KEY.strip())
+    print(
+        f"[auth] API_ADMIN_KEY configured={configured} length={_mask_length(API_ADMIN_KEY)}"
+    )
 
 
 def _require_hash_secret() -> None:
@@ -49,7 +58,19 @@ def verify_raw_api_key(raw_key: str, stored_hash: str) -> bool:
 
 
 def is_admin_key_valid(provided_key: str) -> bool:
-    return bool(API_ADMIN_KEY) and hmac.compare_digest(provided_key or "", API_ADMIN_KEY)
+    return bool(API_ADMIN_KEY.strip()) and hmac.compare_digest((provided_key or "").strip(), API_ADMIN_KEY.strip())
+
+
+def validate_admin_key(provided_key: str) -> bool:
+    debug_admin_key_state()
+    if not API_ADMIN_KEY.strip():
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="API_ADMIN_KEY no configurada en el servidor",
+        )
+    if not hmac.compare_digest((provided_key or "").strip(), API_ADMIN_KEY.strip()):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Admin API Key inválida.")
+    return True
 
 
 def get_api_key_by_raw(session: Session, raw_key: str) -> Optional[ApiKey]:

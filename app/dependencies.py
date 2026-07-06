@@ -4,7 +4,7 @@ from fastapi import Depends, Header, HTTPException, Request, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.auth import can_use_api_key, get_api_key_by_raw, is_admin_key_valid
+from app.auth import can_use_api_key, get_api_key_by_raw, validate_admin_key
 from app.database import SessionLocal
 from app.models import ApiKey, ApiLog
 
@@ -53,5 +53,4 @@ def get_current_api_key(
 
 
 def require_admin_key(x_admin_api_key: str = Header(default="", alias="X-Admin-API-Key")) -> None:
-    if not is_admin_key_valid(x_admin_api_key):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Admin API Key inválida.")
+    validate_admin_key(x_admin_api_key)

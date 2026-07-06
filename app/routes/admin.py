@@ -5,12 +5,14 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.admin_schemas import ApiKeyCreateRequest, ApiKeyCreatedResponse, ApiKeyResponse, ApiKeyStatsResponse, ApiLogResponse
-from app.auth import DEFAULT_DAILY_LIMIT, DEFAULT_MINUTE_LIMIT, generate_api_key, hash_api_key
+from app.auth import DEFAULT_DAILY_LIMIT, DEFAULT_MINUTE_LIMIT, generate_api_key, hash_api_key, debug_admin_key_state
 from app.dependencies import get_db, require_admin_key
 from app.models import ApiKey, ApiLog
 
 
 router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_admin_key)])
+
+debug_admin_key_state()
 
 
 def _api_key_to_response(api_key: ApiKey) -> ApiKeyResponse:
