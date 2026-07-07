@@ -3,7 +3,6 @@ const el = (id) => document.getElementById(id);
 const adminKeyInput = el("adminKey");
 const saveBtn = el("saveAdminKey");
 const clearBtn = el("clearAdminKey");
-const clearAdminBtn = el("clearAdminBtn");
 const refreshBtn = el("refreshBtn");
 const createTokenForm = el("createTokenForm");
 const tokenName = el("tokenName");
@@ -19,9 +18,7 @@ const tokenDialogCopy = el("tokenDialogCopy");
 const tokenDialogClose = el("tokenDialogClose");
 const apiHealthPill = el("apiHealthPill");
 const dbHealthPill = el("dbHealthPill");
-const sidebar = el("adminSidebar");
-const sidebarToggle = el("sidebarToggle");
-const sidebarBackdrop = el("sidebarBackdrop");
+const sidebarBadge = el("sidebarBadge");
 
 function getAdminKey() {
   return (localStorage.getItem(STORAGE_KEY) || adminKeyInput?.value || "").trim();
@@ -63,6 +60,24 @@ function setStatus(message, error = false) {
   statusBox.dataset.error = error ? "1" : "0";
 }
 
+function setSidebarBadge(status, hasKeys = false) {
+  if (!sidebarBadge) return;
+  sidebarBadge.classList.remove("sidebar-badge--ok", "sidebar-badge--warn", "sidebar-badge--error");
+  let label = "SYSTEM ONLINE";
+  let variant = "sidebar-badge--ok";
+
+  if (status !== "ok") {
+    variant = status === "degraded" ? "sidebar-badge--warn" : "sidebar-badge--error";
+    label = status === "degraded" ? "SYSTEM DEGRADED" : "SYSTEM OFFLINE";
+  } else if (!hasKeys) {
+    variant = "sidebar-badge--warn";
+    label = "SYSTEM READY";
+  }
+
+  sidebarBadge.classList.add(variant);
+  sidebarBadge.textContent = label;
+}
+
 function formatDate(value) {
   return value ? new Date(value).toLocaleString() : "-";
 }
@@ -88,6 +103,7 @@ async function loadStatus() {
   setStatus(data);
   if (apiHealthPill) apiHealthPill.textContent = `API: ${data.status || "ok"}`;
   if (dbHealthPill) dbHealthPill.textContent = `DB: ${data.api_keys?.total ?? 0} keys`;
+  setSidebarBadge(data.status, (data.api_keys?.total ?? 0) > 0);
 }
 
 async function loadTokens() {
@@ -140,15 +156,6 @@ function loadSavedKey() {
   syncHint(saved ? "X-Admin-Key cargada desde almacenamiento local." : "La clave solo se usa en este navegador.");
 }
 
-function setSidebarOpen(isOpen) {
-  if (!sidebar || !sidebarToggle || !sidebarBackdrop) return;
-  sidebar.classList.toggle("is-open", isOpen);
-  sidebarBackdrop.hidden = !isOpen;
-  sidebarToggle.setAttribute("aria-expanded", String(isOpen));
-  sidebarToggle.setAttribute("aria-label", isOpen ? "Cerrar menú" : "Abrir menú");
-  document.body.classList.toggle("sidebar-open", isOpen);
-}
-
 saveBtn?.addEventListener("click", () => {
   const value = adminKeyInput.value.trim();
   if (!value) return;
@@ -161,12 +168,6 @@ clearBtn?.addEventListener("click", () => {
   localStorage.removeItem(STORAGE_KEY);
   if (adminKeyInput) adminKeyInput.value = "";
   syncHint("Clave eliminada del navegador.");
-});
-
-clearAdminBtn?.addEventListener("click", () => {
-  localStorage.removeItem(STORAGE_KEY);
-  if (adminKeyInput) adminKeyInput.value = "";
-  syncHint("Sesión administrativa cerrada.");
 });
 
 refreshBtn?.addEventListener("click", () => loadTokens().catch((error) => setStatus(error.message, true)));
@@ -183,21 +184,6 @@ tokensBody?.addEventListener("click", async (event) => {
   } catch (error) {
     setStatus(error.message, true);
   }
-});
-
-sidebarToggle?.addEventListener("click", () => {
-  const isOpen = !sidebar?.classList.contains("is-open");
-  setSidebarOpen(isOpen);
-});
-
-sidebarBackdrop?.addEventListener("click", () => setSidebarOpen(false));
-
-sidebar?.addEventListener("click", (event) => {
-  if (event.target.closest("a")) setSidebarOpen(false);
-});
-
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") setSidebarOpen(false);
 });
 
 tokenDialogClose?.addEventListener("click", () => tokenDialog.close());

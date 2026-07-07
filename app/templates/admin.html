@@ -7,34 +7,14 @@
   <link rel="stylesheet" href="/static/css/admin.css?v=6">
 </head>
 <body class="admin-page">
-  <button id="sidebarToggle" class="mobile-menu-button" type="button" aria-controls="adminSidebar" aria-expanded="false" aria-label="Abrir menú">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-  <div id="sidebarBackdrop" class="sidebar-backdrop" hidden></div>
-  <aside id="adminSidebar" class="sidebar card">
-    <div>
-      <p class="eyebrow">Admin Console</p>
-      <h1>Control Panel</h1>
-      <p class="lede">Gestiona tokens, activación y estadísticas desde una interfaz HTML/JS nativa.</p>
-    </div>
-    <nav class="nav">
-      <a href="#overview">Overview</a>
-      <a href="#keys">API Keys</a>
-      <a href="#stats">Stats</a>
-      <a href="#health">Health</a>
-    </nav>
-    <div class="sidebar-actions">
-      <button id="clearAdminBtn" class="button button--secondary" type="button">Cerrar sesión</button>
-    </div>
-  </aside>
-
   <main class="admin-shell">
     <header id="overview" class="hero card hero--admin">
       <div>
         <p class="eyebrow">Administration</p>
-        <h2>Secure key operations and usage controls.</h2>
+        <div class="hero-title-row">
+          <h2>Secure key operations and usage controls.</h2>
+          <span id="sidebarBadge" class="sidebar-badge sidebar-badge--ok">SYSTEM ONLINE</span>
+        </div>
         <p class="lede">Conecta directamente con los endpoints reales de `/admin` sin React, Babel ni routers de cliente.</p>
       </div>
       <div class="status-stack">
