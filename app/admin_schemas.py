@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class ApiKeyCreateRequest(BaseModel):
-    nombre: str
+    nombre: str = Field(min_length=1, max_length=120)
     descripcion: Optional[str] = None
     limite_diario: Optional[int] = None
     limite_por_minuto: Optional[int] = None

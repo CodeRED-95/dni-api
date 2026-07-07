@@ -95,6 +95,7 @@ docker compose up -d --build
 
 La API quedará disponible en:
 
+- `http://localhost:8000/` redirige a `/web`
 - `http://localhost:8000`
 - `http://localhost:8002`
 - Swagger: `http://localhost:8000/docs`
@@ -150,15 +151,18 @@ Authorization: Bearer MI_API_KEY
 
 Las rutas públicas siguen sin pedir clave:
 
-- `/`
 - `/web`
 - `/docs`
 - `/openapi.json`
 - `/redoc`
 
+La interfaz `/web` sí necesita una `X-API-Key` para consultar DNI.
+
 ## Administración
 
 Los endpoints `/admin/*` usan `X-Admin-Key`.
+
+La UI `/admin-web` muestra el estado de la API, configuración básica y estadísticas generales sin mostrar secretos completos.
 
 Ejemplo:
 

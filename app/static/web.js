@@ -1,74 +1,89 @@
-const form = document.getElementById("ruc-form");
-const output = document.getElementById("output");
-const statusEl = document.getElementById("status");
-const httpStatusEl = document.getElementById("httpStatus");
+const form = document.getElementById("dniForm");
+const dniInput = document.getElementById("dni");
+const apiKeyInput = document.getElementById("apiKey");
+const submitBtn = document.getElementById("submitBtn");
+const requestState = document.getElementById("requestState");
+const resultTitle = document.getElementById("resultTitle");
+const resultMeta = document.getElementById("resultMeta");
+const resultBox = document.getElementById("resultBox");
+const formHint = document.getElementById("formHint");
 
-function render(value) {
-  output.textContent = JSON.stringify(value, null, 2);
+function setState(text, tone = "idle") {
+  requestState.textContent = text;
+  requestState.className = tone === "error" ? "pill status-bad" : tone === "ok" ? "pill status-ok" : "pill";
 }
 
-function setStatus(message, isError = false) {
-  statusEl.textContent = message;
-  statusEl.style.color = isError ? "#fb7185" : "";
+function renderMeta(data) {
+  const items = [
+    ["DNI", data.dni],
+    ["Nombres", data.nombres],
+    ["Apellido paterno", data.apellido_paterno || "-"],
+    ["Apellido materno", data.apellido_materno || "-"],
+    ["Nombre completo", data.nombre_completo || "-"],
+    ["Fuente", data.fuente || "-"],
+    ["Género", data.genero || "-"],
+    ["Nacimiento", data.fecha_nacimiento || "-"],
+    ["Verificación", data.codigo_verificacion || "-"],
+  ];
+  resultMeta.innerHTML = items
+    .map(([label, value]) => `<div class="meta-item"><span>${label}</span><strong>${value ?? "-"}</strong></div>`)
+    .join("");
 }
 
-function setHttpStatus(value) {
-  httpStatusEl.textContent = value;
-}
-
-function validateForm(dni, apiKey) {
-  if (!dni) return "El DNI es obligatorio.";
-  if (!/^\d{8}$/.test(dni)) return "El DNI debe tener 8 dígitos numéricos.";
-  if (!apiKey) return "La API Key es obligatoria.";
+function validate(dni, apiKey) {
+  if (!/^\d{8}$/.test(dni)) return "El DNI debe tener exactamente 8 dígitos.";
+  if (!apiKey) return "Debes ingresar una API Key.";
   return "";
 }
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-
-  const apiKey = document.getElementById("apiKey").value.trim();
-  const dni = document.getElementById("dni").value.trim();
-  const error = validateForm(dni, apiKey);
+  const dni = dniInput.value.trim();
+  const apiKey = apiKeyInput.value.trim();
+  const error = validate(dni, apiKey);
 
   if (error) {
-    setHttpStatus("-");
-    setStatus(error, true);
-    render({ detail: error });
+    setState("Error", "error");
+    resultTitle.textContent = "Consulta inválida";
+    resultMeta.innerHTML = "";
+    resultBox.textContent = error;
+    formHint.textContent = error;
     return;
   }
 
-  setStatus("Consultando...");
-  setHttpStatus("...");
+  submitBtn.disabled = true;
+  setState("Consultando...");
+  resultTitle.textContent = `Buscando ${dni}`;
+  resultBox.textContent = "Consultando la API...";
+  resultMeta.innerHTML = "";
 
   try {
-    const url = `/dni/${encodeURIComponent(dni)}?apikey=${encodeURIComponent(apiKey)}`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
+    const response = await fetch(`/dni/${encodeURIComponent(dni)}?apikey=${encodeURIComponent(apiKey)}`, {
+      headers: { Accept: "application/json" },
     });
 
-    let data;
-    try {
-      data = await response.json();
-    } catch {
-      data = {};
-    }
-
-    setHttpStatus(String(response.status));
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      setStatus(data.detail || `Error ${response.status}`, true);
-      render(data);
+      const message = data.detail || `Error HTTP ${response.status}`;
+      setState("Error", "error");
+      resultTitle.textContent = "No se pudo completar la consulta";
+      resultBox.textContent = message;
+      formHint.textContent = message;
       return;
     }
 
-    setStatus("Consulta exitosa");
-    render(data);
-  } catch (error) {
-    setHttpStatus("ERR");
-    setStatus("Error de red o servidor", true);
-    render({ error: String(error) });
+    setState("OK", "ok");
+    resultTitle.textContent = data.nombre_completo || `DNI ${dni}`;
+    renderMeta(data);
+    resultBox.textContent = JSON.stringify(data, null, 2);
+    formHint.textContent = `Consulta completada correctamente. Origen: ${data.fuente || "desconocido"}.`;
+  } catch {
+    setState("Error", "error");
+    resultTitle.textContent = "Error de conexión";
+    resultBox.textContent = "No se pudo conectar con la API.";
+    formHint.textContent = "Revisa tu conexión o la disponibilidad del servidor.";
+  } finally {
+    submitBtn.disabled = false;
   }
 });

@@ -3,31 +3,44 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DNI API</title>
+  <title>Consulta DNI</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <main class="page">
-    <section class="card hero">
-      <div>
-        <p class="eyebrow">DNI API</p>
-        <h1>Consulta DNI desde el navegador</h1>
-        <p class="muted">Ingresa tu API Key y un DNI de 8 dígitos para consultar la información.</p>
-      </div>
+  <main class="app-shell">
+    <section class="hero card">
+      <p class="eyebrow">Consulta DNI</p>
+      <h1>Consulta simple y rápida</h1>
+      <p class="muted">Ingresa un DNI de 8 dígitos y tu API Key para consultar la información disponible.</p>
     </section>
-    <section class="card form-card">
-      <form id="ruc-form">
-        <label>API Key <input id="apiKey" type="password" placeholder="X-API-Key" required></label>
-        <label>DNI <input id="dni" type="text" placeholder="12345678" maxlength="8" pattern="\d{8}" required></label>
-        <button type="submit">Consultar</button>
+
+    <section class="card">
+      <form id="dniForm" class="form-grid">
+        <label>
+          <span>DNI</span>
+          <input id="dni" type="text" inputmode="numeric" maxlength="8" placeholder="12345678" autocomplete="off" required>
+        </label>
+        <label>
+          <span>API Key</span>
+          <input id="apiKey" type="password" placeholder="X-API-Key" autocomplete="off" required>
+        </label>
+        <button id="submitBtn" type="submit">Consultar</button>
       </form>
+      <p id="formHint" class="hint muted">La consulta mostrará nombres, apellidos y datos disponibles.</p>
     </section>
+
     <section class="card result-card">
-      <div id="status" class="status muted">Esperando consulta...</div>
-      <div class="status muted">HTTP: <span id="httpStatus">-</span></div>
-      <pre id="output">{}</pre>
+      <div class="result-head">
+        <div>
+          <p class="section-label">Resultado</p>
+          <h2 id="resultTitle">Sin consultas todavía</h2>
+        </div>
+        <span id="requestState" class="pill">Listo</span>
+      </div>
+      <div id="resultMeta" class="meta-grid"></div>
+      <pre id="resultBox" class="result-box">Ingresa un DNI para comenzar.</pre>
     </section>
   </main>
-  <script src="/static/web.js?v=2"></script>
+  <script src="/static/web.js?v=3"></script>
 </body>
 </html>

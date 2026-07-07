@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Response
+from fastapi.responses import RedirectResponse
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -40,6 +41,11 @@ def startup() -> None:
     Base.metadata.create_all(bind=engine)
 
 
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/web", status_code=307)
+
+
 @app.get("/health")
 def health():
     db_ok = True
@@ -70,13 +76,15 @@ def custom_openapi():
         "type": "apiKey",
         "in": "header",
         "name": "X-API-Key",
-        "description": "Token obligatorio para endpoints públicos.",
+        "description": "Token obligatorio para endpoints de consulta DNI.",
     }
-    schema["security"] = [{"ApiKeyAuth": []}]
+    schema["security"] = []
     for path, methods in schema.get("paths", {}).items():
         for method_name, operation in methods.items():
             if path.startswith("/admin"):
                 operation["security"] = [{"AdminApiKey": []}]
+            elif path.startswith("/dni") or path.startswith("/buscar"):
+                operation["security"] = [{"ApiKeyAuth": []}]
     schema["components"]["securitySchemes"]["AdminApiKey"] = {
         "type": "apiKey",
         "in": "header",

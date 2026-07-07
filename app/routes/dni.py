@@ -16,9 +16,10 @@ router = APIRouter(prefix="", tags=["DNI"])
 
 
 def validate_dni(dni: str) -> str:
-    if not dni.isdigit() or len(dni) != 8:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="El DNI debe tener 8 dígitos numéricos.")
-    return dni
+    normalized = (dni or "").strip()
+    if not normalized.isdigit() or len(normalized) != 8:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="El DNI debe tener exactamente 8 dígitos numéricos.")
+    return normalized
 
 
 def serialize(record: DniConsult) -> DniResponse:
@@ -78,8 +79,8 @@ def get_dni(dni: str, request: Request, db: Session = Depends(get_db), api_key=D
         payload = client.get_dni(dni)
     except PeruDevsNotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="DNI no encontrado.")
-    except PeruDevsError as exc:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"No se pudo consultar PeruDevs: {exc}")
+    except PeruDevsError:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="No se pudo consultar la fuente externa.")
 
     record = save_record(db, payload)
     request.state.origen = "PeruDevs"
@@ -96,8 +97,8 @@ def refresh_dni(dni: str, request: Request, db: Session = Depends(get_db), api_k
         payload = client.get_dni(dni)
     except PeruDevsNotFound:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="DNI no encontrado.")
-    except PeruDevsError as exc:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=f"No se pudo consultar PeruDevs: {exc}")
+    except PeruDevsError:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="No se pudo consultar la fuente externa.")
 
     record = save_record(db, payload)
     request.state.origen = "PeruDevs"

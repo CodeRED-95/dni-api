@@ -87,7 +87,7 @@ def extract_public_api_key(request: Request) -> str:
     query_token = (request.query_params.get("token") or "").strip()
     if query_token:
         return query_token
-    return query_key
+    return ""
 
 
 def get_api_key_by_raw(session: Session, raw_key: str) -> Optional[ApiKey]:
