@@ -60,6 +60,10 @@ Abrir:
 - `http://127.0.0.1:8000/admin-web`
 - `http://127.0.0.1:8000/health`
 - `http://127.0.0.1:8000/status`
+- `http://127.0.0.1:8000/static/css/styles.css`
+- `http://127.0.0.1:8000/static/js/web.js`
+- `http://127.0.0.1:8000/static/css/admin.css`
+- `http://127.0.0.1:8000/static/js/admin.js`
 
 ## 3.1) Verificar que se creó `local.db`
 
@@ -80,6 +84,10 @@ curl http://127.0.0.1:8000/status
 ```powershell
 curl http://127.0.0.1:8000/web
 curl http://127.0.0.1:8000/admin-web
+curl http://127.0.0.1:8000/static/css/styles.css
+curl http://127.0.0.1:8000/static/js/web.js
+curl http://127.0.0.1:8000/static/css/admin.css
+curl http://127.0.0.1:8000/static/js/admin.js
 ```
 
 ### Consulta DNI
@@ -110,6 +118,13 @@ Opcionalmente define:
 - `LOCAL_ADMIN_KEY` para la clave admin
 
 Si `LOCAL_API_KEY` o `LOCAL_ADMIN_KEY` no están definidos, el script saltará esas pruebas y seguirá validando `/health`, `/web` y `/admin-web`.
+
+El CSS y JS públicos están en:
+
+- `/static/css/styles.css`
+- `/static/css/admin.css`
+- `/static/js/web.js`
+- `/static/js/admin.js`
 
 ## 6) Comando recomendado antes de subir a Docker
 

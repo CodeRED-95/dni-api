@@ -59,6 +59,18 @@ def main():
     status_code, body = request("/admin-web")
     checks.append(show("/admin-web", status_code, body))
 
+    status_code, body = request("/static/css/styles.css")
+    checks.append(show("/static/css/styles.css", status_code, body))
+
+    status_code, body = request("/static/js/web.js")
+    checks.append(show("/static/js/web.js", status_code, body))
+
+    status_code, body = request("/static/css/admin.css")
+    checks.append(show("/static/css/admin.css", status_code, body))
+
+    status_code, body = request("/static/js/admin.js")
+    checks.append(show("/static/js/admin.js", status_code, body))
+
     if not API_KEY:
         print("[INFO] LOCAL_API_KEY no configurada; salto la prueba /dni/{dni}.")
     else:
@@ -66,7 +78,7 @@ def main():
         checks.append(show(f"/dni/{TEST_DNI}", status_code, body))
         data = parse_json(body)
         if status_code == 200 and isinstance(data, dict):
-            print(f"[OK] DNI consultado: {data.get('dni', TEST_DNI)} | fuente={data.get('fuente', '-')}")
+            print(f"[OK] DNI consultado: {data.get('dni', TEST_DNI)} | nombre={data.get('nombre_completo', '-')}")
 
     if ADMIN_KEY:
         status_code, body = request("/admin/status", headers={"X-Admin-Key": ADMIN_KEY, "Accept": "application/json"})

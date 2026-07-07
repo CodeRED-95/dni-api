@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Response
 from fastapi.responses import RedirectResponse
 from sqlalchemy.exc import SQLAlchemyError
@@ -19,6 +21,9 @@ app = FastAPI(
     description="API profesional para consulta de DNI en Perú con caché local y fallback a PeruDevs.",
 )
 
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -34,7 +39,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(ApiAuthLogMiddleware)
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 @app.on_event("startup")
