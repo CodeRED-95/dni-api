@@ -70,6 +70,11 @@ def main():
     if status_code == 200:
         checks.append(assert_contains("/admin-web html", body, '<link rel="stylesheet" href="/static/css/admin.css">'))
         checks.append(assert_contains("/admin-web html", body, '<script src="/static/js/admin.js" defer></script>'))
+        checks.append(assert_contains("/admin-web html", body, '/static/css/admin.css'))
+        checks.append(assert_contains("/admin-web html", body, '/static/js/admin.js'))
+        if '/static/css/web.css' in body:
+            print("[ERROR] /admin-web html: should not include /static/css/web.css")
+            checks.append(False)
 
     status_code, body = request("/static/css/web.css")
     checks.append(show("/static/css/web.css", status_code, body))
