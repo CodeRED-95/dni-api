@@ -19,6 +19,9 @@ const tokenDialogCopy = el("tokenDialogCopy");
 const tokenDialogClose = el("tokenDialogClose");
 const apiHealthPill = el("apiHealthPill");
 const dbHealthPill = el("dbHealthPill");
+const sidebar = el("adminSidebar");
+const sidebarToggle = el("sidebarToggle");
+const sidebarBackdrop = el("sidebarBackdrop");
 
 function getAdminKey() {
   return (localStorage.getItem(STORAGE_KEY) || adminKeyInput?.value || "").trim();
@@ -137,6 +140,15 @@ function loadSavedKey() {
   syncHint(saved ? "X-Admin-Key cargada desde almacenamiento local." : "La clave solo se usa en este navegador.");
 }
 
+function setSidebarOpen(isOpen) {
+  if (!sidebar || !sidebarToggle || !sidebarBackdrop) return;
+  sidebar.classList.toggle("is-open", isOpen);
+  sidebarBackdrop.hidden = !isOpen;
+  sidebarToggle.setAttribute("aria-expanded", String(isOpen));
+  sidebarToggle.setAttribute("aria-label", isOpen ? "Cerrar menú" : "Abrir menú");
+  document.body.classList.toggle("sidebar-open", isOpen);
+}
+
 saveBtn?.addEventListener("click", () => {
   const value = adminKeyInput.value.trim();
   if (!value) return;
@@ -171,6 +183,21 @@ tokensBody?.addEventListener("click", async (event) => {
   } catch (error) {
     setStatus(error.message, true);
   }
+});
+
+sidebarToggle?.addEventListener("click", () => {
+  const isOpen = !sidebar?.classList.contains("is-open");
+  setSidebarOpen(isOpen);
+});
+
+sidebarBackdrop?.addEventListener("click", () => setSidebarOpen(false));
+
+sidebar?.addEventListener("click", (event) => {
+  if (event.target.closest("a")) setSidebarOpen(false);
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setSidebarOpen(false);
 });
 
 tokenDialogClose?.addEventListener("click", () => tokenDialog.close());

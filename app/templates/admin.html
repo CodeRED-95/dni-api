@@ -7,7 +7,13 @@
   <link rel="stylesheet" href="/static/css/admin.css?v=6">
 </head>
 <body class="admin-page">
-  <aside class="sidebar card">
+  <button id="sidebarToggle" class="mobile-menu-button" type="button" aria-controls="adminSidebar" aria-expanded="false" aria-label="Abrir menú">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  <div id="sidebarBackdrop" class="sidebar-backdrop" hidden></div>
+  <aside id="adminSidebar" class="sidebar card">
     <div>
       <p class="eyebrow">Admin Console</p>
       <h1>Control Panel</h1>
