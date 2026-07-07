@@ -1,0 +1,59 @@
+:root{
+  --bg:#0b1326;
+  --surface:#131b2e;
+  --surface-2:#171f33;
+  --surface-3:#222a3d;
+  --border:#424754;
+  --text:#dae2fd;
+  --muted:#c2c6d6;
+  --primary:#adc6ff;
+  --primary-strong:#4d8eff;
+  --primary-soft:#d8e2ff;
+  --tertiary:#ffb786;
+  --tertiary-soft:#ffdcc6;
+  --shadow:0 12px 30px rgba(0,0,0,.4);
+  font-family: Inter, system-ui, sans-serif;
+}
+*{box-sizing:border-box}
+body.web-page{margin:0;min-height:100vh;background:var(--bg);color:var(--text)}
+.web-topbar,.web-footer{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1rem 1.5rem;border-color:var(--border);background:rgba(6,14,32,.92)}
+.web-topbar{position:sticky;top:0;border-bottom:1px solid rgba(66,71,84,.45);backdrop-filter:blur(12px);z-index:10}
+.web-footer{border-top:1px solid rgba(66,71,84,.45);flex-wrap:wrap}
+.web-topbar__brand{display:flex;flex-direction:column;gap:.2rem}
+.brand-mark{font-weight:700;font-size:1.2rem;color:var(--primary)}
+.brand-sub,.lede,.helper-text,.web-footer a,.ghost-link{color:var(--muted)}
+.web-topbar__actions,.button-row{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+.ghost-button,.secondary-button,.icon-button,.primary-button,.link-button{border:1px solid var(--border);border-radius:.75rem;padding:.8rem 1rem;font:inherit;cursor:pointer;text-decoration:none}
+.ghost-button,.secondary-button,.icon-button{background:var(--surface-3);color:var(--text)}
+.primary-button{background:var(--primary-strong);color:#001a42;border-color:transparent;font-weight:700}
+.link-button{display:inline-flex;align-items:center;justify-content:center;background:var(--surface-3);color:var(--primary)}
+.web-shell{max-width:1280px;margin:0 auto;padding:1.25rem;display:grid;gap:1rem}
+.hero-card,.panel{background:linear-gradient(180deg,var(--surface-2),var(--surface));border:1px solid var(--border);border-radius:1rem;box-shadow:var(--shadow);padding:1.2rem}
+.hero-card h1{margin:.25rem 0 .5rem;font-size:clamp(2rem,4vw,3rem);line-height:1.1}
+.eyebrow{letter-spacing:.16em;text-transform:uppercase;color:var(--primary);font-size:.75rem;margin:0}
+.grid-two{display:grid;grid-template-columns:1.1fr .9fr;gap:1rem}
+.panel__header{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem}
+.stack-form{display:grid;gap:1rem}
+.stack-form label{display:grid;gap:.45rem;font-weight:600}
+.stack-form span{font-size:.8rem;letter-spacing:.12em;color:var(--muted)}
+input{background:#0f172a;color:var(--text);border:1px solid var(--border);border-radius:.75rem;padding:.9rem 1rem;font:inherit}
+.status-pill{display:inline-flex;align-items:center;padding:.35rem .65rem;border-radius:999px;background:rgba(173,198,255,.15);color:var(--primary);font-size:.78rem;font-weight:700;letter-spacing:.08em}
+.status-pill--accent{background:rgba(255,183,134,.14);color:var(--tertiary)}
+.status-pill--error{background:rgba(255,180,171,.14);color:#ffb4ab}
+.result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;margin-bottom:1rem}
+.result-item{background:var(--surface-3);border:1px solid var(--border);border-radius:.85rem;padding:.8rem}
+.result-item span{display:block;color:var(--muted);font-size:.78rem;margin-bottom:.2rem}
+.result-item strong{display:block;font-size:1rem;color:var(--text);word-break:break-word}
+.result-box,.curl-preview,.token-box{background:#060e20;border:1px solid rgba(66,71,84,.5);color:var(--primary-soft);border-radius:.85rem;padding:1rem;overflow:auto;white-space:pre-wrap;word-break:break-word;min-height:160px}
+.curl-card{margin-top:1rem}
+.curl-card__header{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.5rem;color:var(--muted);font-size:.8rem;letter-spacing:.12em;text-transform:uppercase}
+.helper-text{margin:.75rem 0 0}
+.button-row--end{justify-content:flex-end}
+@media (max-width:960px){
+  .grid-two{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .web-topbar,.web-footer{padding:1rem}
+  .result-grid{grid-template-columns:1fr}
+  .web-topbar{align-items:flex-start;flex-direction:column}
+}

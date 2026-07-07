@@ -59,8 +59,8 @@ def main():
     status_code, body = request("/admin-web")
     checks.append(show("/admin-web", status_code, body))
 
-    status_code, body = request("/static/css/styles.css")
-    checks.append(show("/static/css/styles.css", status_code, body))
+    status_code, body = request("/static/css/web.css")
+    checks.append(show("/static/css/web.css", status_code, body))
 
     status_code, body = request("/static/js/web.js")
     checks.append(show("/static/js/web.js", status_code, body))
