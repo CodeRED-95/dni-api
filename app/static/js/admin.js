@@ -5,8 +5,11 @@ const saveBtn = el("saveAdminKey");
 const clearBtn = el("clearAdminKey");
 const clearAdminBtn = el("clearAdminBtn");
 const refreshBtn = el("refreshBtn");
-const newTokenBtn = el("newTokenBtn");
-const newTokenBtn2 = el("newTokenBtn2");
+const createTokenForm = el("createTokenForm");
+const tokenName = el("tokenName");
+const tokenDescription = el("tokenDescription");
+const tokenDailyLimit = el("tokenDailyLimit");
+const tokenMinuteLimit = el("tokenMinuteLimit");
 const tokensBody = el("tokensBody");
 const statusBox = el("statusBox");
 const adminHint = el("adminHint");
@@ -14,12 +17,15 @@ const tokenDialog = el("tokenDialog");
 const tokenDialogText = el("tokenDialogText");
 const tokenDialogCopy = el("tokenDialogCopy");
 const tokenDialogClose = el("tokenDialogClose");
+const apiHealthPill = el("apiHealthPill");
+const dbHealthPill = el("dbHealthPill");
 
 function getAdminKey() {
-  return (localStorage.getItem(STORAGE_KEY) || adminKeyInput.value || "").trim();
+  return (localStorage.getItem(STORAGE_KEY) || adminKeyInput?.value || "").trim();
 }
 
 function syncHint(message, error = false) {
+  if (!adminHint) return;
   adminHint.textContent = message;
   adminHint.style.color = error ? "#ffb4ab" : "";
 }
@@ -38,8 +44,20 @@ async function apiFetch(url, options = {}) {
 }
 
 function setStatus(message, error = false) {
-  statusBox.textContent = message;
-  statusBox.style.color = error ? "#ffb4ab" : "";
+  if (!statusBox) return;
+  if (typeof message === "string") {
+    statusBox.innerHTML = `<span>Mensaje</span><div class="status-inline"><strong>${message}</strong></div>`;
+    statusBox.dataset.error = error ? "1" : "0";
+    return;
+  }
+  const blocks = [
+    message.status || "-",
+    `${message.api_keys?.active ?? 0}/${message.api_keys?.total ?? 0} keys`,
+    `${message.logs?.total ?? 0} logs`,
+    `D ${message.config?.default_daily_limit ?? "-"} / M ${message.config?.default_minute_limit ?? "-"}`,
+  ];
+  statusBox.innerHTML = `<span>Estado del servicio</span><div class="status-inline">${blocks.map((value) => `<strong>${value}</strong>`).join("")}</div>`;
+  statusBox.dataset.error = error ? "1" : "0";
 }
 
 function formatDate(value) {
@@ -47,14 +65,14 @@ function formatDate(value) {
 }
 
 function row(token) {
-  const preview = token.api_key_preview || token.preview || "—";
+  const preview = token.api_key_preview || "—";
   return `<tr>
-    <td><div class="flex-col"><strong>${token.nombre || ""}</strong><span class="muted">${formatDate(token.fecha_creacion)}</span></div></td>
-    <td><code class="token-preview">${preview}</code></td>
-    <td>${token.activo ? '<span class="pill ok">ACTIVE</span>' : '<span class="pill off">REVOKED</span>'}</td>
-    <td>
+    <td data-label="Nombre"><strong>${token.nombre || ""}</strong><div class="hint">${formatDate(token.fecha_creacion)}</div></td>
+    <td data-label="Preview"><code>${preview}</code></td>
+    <td data-label="Estado">${token.activo ? '<span class="pill ok">Active</span>' : '<span class="pill off">Revoked</span>'}</td>
+    <td data-label="Acciones">
       <div class="actions">
-        <button type="button" data-action="copy" data-token="${preview}" data-preview="${preview}">Copiar</button>
+        <button type="button" data-action="copy" data-token="${preview}">Copiar</button>
         <button type="button" data-action="${token.activo ? "deactivate" : "activate"}" data-id="${token.id}">${token.activo ? "Desactivar" : "Activar"}</button>
         <button type="button" data-action="delete" data-id="${token.id}">Eliminar</button>
       </div>
@@ -64,7 +82,9 @@ function row(token) {
 
 async function loadStatus() {
   const data = await apiFetch("/admin/status", { method: "GET" });
-  setStatus(JSON.stringify(data, null, 2));
+  setStatus(data);
+  if (apiHealthPill) apiHealthPill.textContent = `API: ${data.status || "ok"}`;
+  if (dbHealthPill) dbHealthPill.textContent = `DB: ${data.api_keys?.total ?? 0} keys`;
 }
 
 async function loadTokens() {
@@ -73,16 +93,20 @@ async function loadTokens() {
 }
 
 async function createToken() {
-  const payload = {
-    nombre: prompt("Nombre del token") || "",
-    descripcion: "",
-    limite_diario: null,
-    limite_por_minuto: null,
-  };
-  if (!payload.nombre.trim()) return;
-  const token = await apiFetch("/admin/api-keys", { method: "POST", body: JSON.stringify(payload) });
+  const nombre = tokenName?.value.trim() || "";
+  if (!nombre) throw new Error("El nombre del token es obligatorio.");
+  const token = await apiFetch("/admin/api-keys", {
+    method: "POST",
+    body: JSON.stringify({
+      nombre,
+      descripcion: tokenDescription?.value.trim() || "",
+      limite_diario: tokenDailyLimit?.value ? Number(tokenDailyLimit.value) : null,
+      limite_por_minuto: tokenMinuteLimit?.value ? Number(tokenMinuteLimit.value) : null,
+    }),
+  });
   tokenDialogText.textContent = token.api_key || "";
   tokenDialog.showModal();
+  if (createTokenForm) createTokenForm.reset();
   await loadTokens();
   await loadStatus();
 }
@@ -94,9 +118,8 @@ async function runAction(action, id, tokenValue) {
     delete: { url: `/admin/api-keys/${id}`, method: "DELETE" },
   };
   if (action === "copy") {
-    const text = tokenValue || "";
-    if (!text) throw new Error("El backend no expuso el token completo.");
-    await navigator.clipboard.writeText(text);
+    if (!tokenValue) throw new Error("El backend no expuso el token completo.");
+    await navigator.clipboard.writeText(tokenValue);
     setStatus("Token copiado.");
     return;
   }
@@ -110,11 +133,11 @@ async function runAction(action, id, tokenValue) {
 
 function loadSavedKey() {
   const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) adminKeyInput.value = saved;
-  syncHint(saved ? "X-Admin-Key cargada desde almacenamiento local." : "La clave solo se usa en este navegador para llamar a /admin.");
+  if (saved && adminKeyInput) adminKeyInput.value = saved;
+  syncHint(saved ? "X-Admin-Key cargada desde almacenamiento local." : "La clave solo se usa en este navegador.");
 }
 
-saveBtn.addEventListener("click", () => {
+saveBtn?.addEventListener("click", () => {
   const value = adminKeyInput.value.trim();
   if (!value) return;
   localStorage.setItem(STORAGE_KEY, value);
@@ -122,23 +145,25 @@ saveBtn.addEventListener("click", () => {
   loadTokens().catch((error) => setStatus(error.message, true));
 });
 
-clearBtn.addEventListener("click", () => {
+clearBtn?.addEventListener("click", () => {
   localStorage.removeItem(STORAGE_KEY);
-  adminKeyInput.value = "";
+  if (adminKeyInput) adminKeyInput.value = "";
   syncHint("Clave eliminada del navegador.");
 });
 
 clearAdminBtn?.addEventListener("click", () => {
   localStorage.removeItem(STORAGE_KEY);
-  adminKeyInput.value = "";
+  if (adminKeyInput) adminKeyInput.value = "";
   syncHint("Sesión administrativa cerrada.");
 });
 
 refreshBtn?.addEventListener("click", () => loadTokens().catch((error) => setStatus(error.message, true)));
-newTokenBtn?.addEventListener("click", () => createToken().catch((error) => setStatus(error.message, true)));
-newTokenBtn2?.addEventListener("click", () => createToken().catch((error) => setStatus(error.message, true)));
+createTokenForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  createToken().catch((error) => setStatus(error.message, true));
+});
 
-tokensBody.addEventListener("click", async (event) => {
+tokensBody?.addEventListener("click", async (event) => {
   const button = event.target.closest("button[data-action]");
   if (!button) return;
   try {
@@ -148,11 +173,11 @@ tokensBody.addEventListener("click", async (event) => {
   }
 });
 
-tokenDialogClose.addEventListener("click", () => tokenDialog.close());
-tokenDialog.addEventListener("click", (event) => {
+tokenDialogClose?.addEventListener("click", () => tokenDialog.close());
+tokenDialog?.addEventListener("click", (event) => {
   if (event.target === tokenDialog) tokenDialog.close();
 });
-tokenDialogCopy.addEventListener("click", async () => {
+tokenDialogCopy?.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(tokenDialogText.textContent || "");
     setStatus("Token copiado.");

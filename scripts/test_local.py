@@ -62,14 +62,14 @@ def main():
     status_code, body = request("/web")
     checks.append(show("/web", status_code, body))
     if status_code == 200:
-        checks.append(assert_contains("/web html", body, '<link rel="stylesheet" href="/static/css/web.css">'))
-        checks.append(assert_contains("/web html", body, '<script src="/static/js/web.js" defer></script>'))
+        checks.append(assert_contains("/web html", body, '<link rel="stylesheet" href="/static/css/web.css?v=6">'))
+        checks.append(assert_contains("/web html", body, '<script src="/static/js/web.js?v=6" defer></script>'))
 
     status_code, body = request("/admin-web")
     checks.append(show("/admin-web", status_code, body))
     if status_code == 200:
-        checks.append(assert_contains("/admin-web html", body, '<link rel="stylesheet" href="/static/css/admin.css">'))
-        checks.append(assert_contains("/admin-web html", body, '<script src="/static/js/admin.js" defer></script>'))
+        checks.append(assert_contains("/admin-web html", body, '<link rel="stylesheet" href="/static/css/admin.css?v=6">'))
+        checks.append(assert_contains("/admin-web html", body, '<script src="/static/js/admin.js?v=6" defer></script>'))
         checks.append(assert_contains("/admin-web html", body, '/static/css/admin.css'))
         checks.append(assert_contains("/admin-web html", body, '/static/js/admin.js'))
         if '/static/css/web.css' in body:
@@ -87,6 +87,18 @@ def main():
 
     status_code, body = request("/static/js/admin.js")
     checks.append(show("/static/js/admin.js", status_code, body))
+
+    status_code, body = request("/static/css/web.css?v=6")
+    checks.append(show("/static/css/web.css?v=6", status_code, body))
+
+    status_code, body = request("/static/js/web.js?v=6")
+    checks.append(show("/static/js/web.js?v=6", status_code, body))
+
+    status_code, body = request("/static/css/admin.css?v=6")
+    checks.append(show("/static/css/admin.css?v=6", status_code, body))
+
+    status_code, body = request("/static/js/admin.js?v=6")
+    checks.append(show("/static/js/admin.js?v=6", status_code, body))
 
     if not API_KEY:
         print("[INFO] LOCAL_API_KEY no configurada; salto la prueba /dni/{dni}.")
