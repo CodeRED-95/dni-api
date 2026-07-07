@@ -11,7 +11,22 @@ router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(requir
 
 
 def _api_key_to_response(api_key: ApiKey) -> ApiKeyResponse:
-    return ApiKeyResponse.model_validate(api_key)
+    preview = f"{api_key.api_key[:8]}..." if api_key.api_key else None
+    return ApiKeyResponse.model_validate(
+        {
+            "id": api_key.id,
+            "nombre": api_key.nombre,
+            "activo": api_key.activo,
+            "descripcion": api_key.descripcion,
+            "fecha_creacion": api_key.fecha_creacion,
+            "ultimo_uso": api_key.ultimo_uso,
+            "limite_diario": api_key.limite_diario,
+            "limite_por_minuto": api_key.limite_por_minuto,
+            "consultas_realizadas": api_key.consultas_realizadas,
+            "ultima_ip": api_key.ultima_ip,
+            "api_key_preview": preview,
+        }
+    )
 
 
 @router.post("/api-keys", response_model=ApiKeyCreatedResponse, status_code=status.HTTP_201_CREATED)
@@ -44,19 +59,20 @@ def create_api_key(payload: ApiKeyCreateRequest, db: Session = Depends(get_db)):
         limite_por_minuto=api_key.limite_por_minuto,
         consultas_realizadas=api_key.consultas_realizadas,
         ultima_ip=api_key.ultima_ip,
+        api_key_preview=f"{raw_key[:8]}...",
         api_key=raw_key,
     )
 
 
 @router.get("/api-keys", response_model=list[ApiKeyResponse])
 def list_api_keys(db: Session = Depends(get_db)):
-    return db.query(ApiKey).order_by(ApiKey.fecha_creacion.desc()).all()
+    return [_api_key_to_response(api_key) for api_key in db.query(ApiKey).order_by(ApiKey.fecha_creacion.desc()).all()]
 
 
 @router.get("/api-keys/search", response_model=list[ApiKeyResponse])
 def search_api_keys(nombre: str = Query(..., min_length=2), db: Session = Depends(get_db)):
     like = f"%{nombre.strip()}%"
-    return db.query(ApiKey).filter(ApiKey.nombre.ilike(like)).order_by(ApiKey.nombre.asc()).all()
+    return [_api_key_to_response(api_key) for api_key in db.query(ApiKey).filter(ApiKey.nombre.ilike(like)).order_by(ApiKey.nombre.asc()).all()]
 
 
 @router.patch("/api-keys/{api_key_id}/activate", response_model=ApiKeyResponse)
@@ -67,7 +83,7 @@ def activate_api_key(api_key_id: int, db: Session = Depends(get_db)):
     api_key.activo = True
     db.commit()
     db.refresh(api_key)
-    return api_key
+    return _api_key_to_response(api_key)
 
 
 @router.patch("/api-keys/{api_key_id}/deactivate", response_model=ApiKeyResponse)
@@ -78,7 +94,7 @@ def deactivate_api_key(api_key_id: int, db: Session = Depends(get_db)):
     api_key.activo = False
     db.commit()
     db.refresh(api_key)
-    return api_key
+    return _api_key_to_response(api_key)
 
 
 @router.delete("/api-keys/{api_key_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -112,6 +128,7 @@ def regenerate_api_key(api_key_id: int, db: Session = Depends(get_db)):
         limite_por_minuto=api_key.limite_por_minuto,
         consultas_realizadas=api_key.consultas_realizadas,
         ultima_ip=api_key.ultima_ip,
+        api_key_preview=None,
         api_key=raw_key,
     )
 

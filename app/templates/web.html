@@ -1,46 +1,77 @@
 <!doctype html>
-<html lang="es">
-  <head>
+<html class="dark" lang="es">
+<head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Consulta DNI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IdentitySecure | Consultar DNI</title>
   <link rel="stylesheet" href="/static/css/styles.css">
 </head>
-<body>
-  <main class="app-shell">
-    <section class="hero card">
-      <p class="eyebrow">Consulta DNI</p>
-      <h1>Consulta simple y rápida</h1>
-      <p class="muted">Ingresa un DNI de 8 dígitos y tu API Key para consultar la información disponible.</p>
+<body class="web-page">
+  <header class="web-topbar">
+    <div class="web-topbar__brand">
+      <span class="brand-mark">IdentitySecure</span>
+      <span class="brand-sub">Plataforma de Consulta DNI</span>
+    </div>
+    <div class="web-topbar__actions">
+      <a class="ghost-link" href="/admin-web">Get API Key</a>
+      <button id="copyCurlBtn" class="ghost-button" type="button">Copiar curl</button>
+    </div>
+  </header>
+
+  <main class="web-shell">
+    <section class="hero-card">
+      <p class="eyebrow">Design System</p>
+      <h1>Consultar DNI</h1>
+      <p class="lede">Realiza consultas rápidas usando tu X-API-KEY y visualiza solo datos públicos del backend.</p>
     </section>
 
-    <section class="card">
-      <form id="dniForm" class="form-grid">
-        <label>
-          <span>DNI</span>
-          <input id="dni" type="text" inputmode="numeric" maxlength="8" placeholder="12345678" autocomplete="off" required>
-        </label>
-        <label>
-          <span>API Key</span>
-          <input id="apiKey" type="password" placeholder="X-API-Key" autocomplete="off" required>
-        </label>
-        <button id="submitBtn" type="submit">Consultar</button>
-      </form>
-      <p id="formHint" class="hint muted">La consulta mostrará nombres, apellidos y datos disponibles.</p>
-    </section>
-
-    <section class="card result-card">
-      <div class="result-head">
-        <div>
-          <p class="section-label">Resultado</p>
-          <h2 id="resultTitle">Sin consultas todavía</h2>
+    <section class="grid-two">
+      <article class="panel">
+        <div class="panel__header">
+          <h2>Consultar DNI</h2>
+          <span id="requestState" class="status-pill">Listo</span>
         </div>
-        <span id="requestState" class="pill">Listo</span>
-      </div>
-      <div id="resultMeta" class="meta-grid"></div>
-      <pre id="resultBox" class="result-box">Ingresa un DNI para comenzar.</pre>
+        <form id="dniForm" class="stack-form">
+          <label>
+            <span>NÚMERO DE DNI (8 DÍGITOS)</span>
+            <input id="dni" type="text" inputmode="numeric" maxlength="8" placeholder="12345678" autocomplete="off" required>
+          </label>
+          <label>
+            <span>X-API-KEY</span>
+            <input id="apiKey" type="password" placeholder="Ingresa tu token API" autocomplete="off" required>
+          </label>
+          <div class="button-row">
+            <button id="submitBtn" class="primary-button" type="submit">Consultar Ahora</button>
+            <button id="refreshBtn" type="button" class="secondary-button">Refrescar</button>
+          </div>
+        </form>
+        <p id="formHint" class="helper-text">Ingresa un DNI y tu API key para ejecutar la consulta.</p>
+        <div class="curl-card">
+          <div class="curl-card__header">
+            <span>API SAMPLE (CURL)</span>
+            <button id="copyCurlSmallBtn" class="icon-button" type="button">Copiar</button>
+          </div>
+          <pre id="curlPreview" class="curl-preview">curl -H "X-API-Key: TU_API_KEY" http://127.0.0.1:8000/dni/12345678</pre>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel__header">
+          <h2>Resultados</h2>
+          <span class="status-pill status-pill--accent">VERIFICADO</span>
+        </div>
+        <div id="resultMeta" class="result-grid"></div>
+        <pre id="resultBox" class="result-box">Ingresa un DNI para comenzar.</pre>
+      </article>
     </section>
   </main>
-  <script src="/static/js/web.js?v=4"></script>
+
+  <footer class="web-footer">
+    <span>© IdentitySecure API</span>
+    <a href="/admin-web">Administración</a>
+    <a href="/health">API Status</a>
+  </footer>
+
+  <script src="/static/js/web.js?v=5"></script>
 </body>
 </html>

@@ -1,105 +1,109 @@
 <!doctype html>
-<html lang="es">
+<html class="dark" lang="es">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Panel admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IdentitySecure Admin Console</title>
   <link rel="stylesheet" href="/static/css/admin.css">
 </head>
-<body>
+<body class="admin-page">
+  <aside class="admin-sidebar">
+    <div class="admin-brand">
+      <h1>Admin Console</h1>
+      <p>Identity API v1.2</p>
+    </div>
+    <nav class="admin-nav">
+      <a href="#dashboard" class="active">Dashboard</a>
+      <a href="#keys">API Keys</a>
+      <a href="#stats">Usage Stats</a>
+      <a href="#health">API Health</a>
+    </nav>
+    <div class="admin-sidebar__cta">
+      <button id="newTokenBtn" class="primary-button" type="button">Generar Nuevo Token</button>
+      <button id="clearAdminBtn" class="secondary-button" type="button">Logout</button>
+    </div>
+  </aside>
+
   <main class="admin-shell">
-    <section class="card hero">
-      <p class="eyebrow">Administración</p>
-      <h1>Panel básico de control</h1>
-      <p class="muted">Estado de la API, configuración y gestión de API keys sin exponer secretos en pantalla.</p>
-    </section>
-
-    <section class="card">
-      <div class="row">
-        <label class="grow">
-          <span>X-Admin-Key</span>
-          <input id="adminKey" type="password" placeholder="API_ADMIN_KEY" autocomplete="off">
-        </label>
-        <div class="actions">
-          <button id="saveAdminKey" type="button">Guardar local</button>
-          <button id="clearAdminKey" type="button" class="secondary">Borrar</button>
-        </div>
+    <header id="dashboard" class="admin-header">
+      <div>
+        <p class="eyebrow">Dashboard Overview</p>
+        <h2>Supervise and manage API environments in real-time.</h2>
       </div>
-      <p id="adminHint" class="hint muted">La clave solo se usa en este navegador para llamar a /admin.</p>
-    </section>
+      <div class="health-pills">
+        <span id="apiHealthPill" class="status-pill status-pill--accent">API HEALTH: OK</span>
+        <span id="dbHealthPill" class="status-pill">DB: CONNECTED</span>
+      </div>
+    </header>
 
-    <section class="grid-2">
-      <article class="card">
-        <div class="section-head">
-          <h2>Estado</h2>
-          <button id="refreshStatusBtn" type="button" class="secondary">Actualizar</button>
+    <section class="admin-grid">
+      <article class="panel panel--gate">
+        <h3>Security Gate</h3>
+        <p>Enter the administrative secret to unlock destructive actions and sensitive token generation.</p>
+        <label>
+          <span>X-Admin-Key</span>
+          <input id="adminKey" type="password" placeholder="••••••••••••••••" autocomplete="off">
+        </label>
+        <div class="button-row">
+          <button id="saveAdminKey" class="primary-button" type="button">Unlock Administrative Mode</button>
+          <button id="clearAdminKey" class="secondary-button" type="button">Limpiar</button>
         </div>
+        <p id="adminHint" class="helper-text">La clave solo se usa en este navegador para llamar a /admin.</p>
+      </article>
+
+      <article id="stats" class="panel panel--stats">
+        <h3>Configuración</h3>
         <div id="statusBox" class="status-box">Cargando...</div>
       </article>
 
-      <article class="card">
-        <div class="section-head">
-          <h2>Crear API Key</h2>
+      <article id="keys" class="panel panel--table">
+        <div class="panel__header">
+          <div>
+            <h3>Gestión de Tokens</h3>
+            <p>Manage production environment access keys</p>
+          </div>
+          <div class="button-row">
+            <button id="refreshBtn" class="icon-button" type="button">Refresh</button>
+            <button id="newTokenBtn2" class="primary-button" type="button">Generar Nuevo Token</button>
+          </div>
         </div>
-        <form id="createForm" class="form-grid single">
-          <label>
-            <span>Nombre</span>
-            <input id="nombre" type="text" maxlength="120" placeholder="cliente-a" required>
-          </label>
-          <label>
-            <span>Descripción</span>
-            <input id="descripcion" type="text" maxlength="255" placeholder="Acceso interno">
-          </label>
-          <label>
-            <span>Límite diario</span>
-            <input id="dailyLimit" type="number" min="1" placeholder="1000">
-          </label>
-          <label>
-            <span>Límite por minuto</span>
-            <input id="minuteLimit" type="number" min="1" placeholder="60">
-          </label>
-          <button type="submit">Generar</button>
-        </form>
-        <p id="createMessage" class="hint muted">La clave generada solo se mostrará una vez.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>TOKEN NAME</th>
+                <th>API KEY PREVIEW</th>
+                <th>STATUS</th>
+                <th>ACCIONES</th>
+              </tr>
+            </thead>
+            <tbody id="tokensBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article id="health" class="panel panel--footer">
+        <div class="footer-links">
+          <a href="/web">Ir a /web</a>
+          <a href="/health">API Status</a>
+        </div>
       </article>
     </section>
-
-    <section class="card">
-      <div class="section-head">
-        <h2>API Keys</h2>
-        <button id="refreshBtn" type="button" class="secondary">Refrescar</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Estado</th>
-              <th>Consultas</th>
-              <th>Límite diario</th>
-              <th>Límite minuto</th>
-              <th>Último uso</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tokensBody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <dialog id="tokenDialog" class="dialog">
-      <div class="dialog-inner">
-        <h2>API Key generada</h2>
-        <p class="muted">Cópiala ahora. No se volverá a mostrar.</p>
-        <pre id="tokenDialogText" class="token-box"></pre>
-        <div class="dialog-actions">
-          <button id="tokenDialogCopy" type="button">Copiar</button>
-          <button id="tokenDialogClose" type="button" class="secondary">Cerrar</button>
-        </div>
-      </div>
-    </dialog>
   </main>
-  <script src="/static/js/admin.js?v=4"></script>
+
+  <dialog id="tokenDialog" class="dialog">
+    <div class="dialog-inner">
+      <h2>Token generado</h2>
+      <p class="helper-text">Este token solo se mostrará una vez.</p>
+      <pre id="tokenDialogText" class="token-box"></pre>
+      <div class="button-row button-row--end">
+        <button id="tokenDialogCopy" type="button" class="primary-button">Copiar</button>
+        <button id="tokenDialogClose" type="button" class="secondary-button">Cerrar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="/static/js/admin.js?v=5"></script>
 </body>
 </html>

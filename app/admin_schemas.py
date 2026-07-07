@@ -24,6 +24,7 @@ class ApiKeyResponse(BaseModel):
     limite_por_minuto: Optional[int] = None
     consultas_realizadas: int
     ultima_ip: Optional[str] = None
+    api_key_preview: Optional[str] = None
 
 
 class ApiKeyCreatedResponse(ApiKeyResponse):
