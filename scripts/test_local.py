@@ -44,6 +44,12 @@ def parse_json(body):
         return None
 
 
+def assert_contains(name: str, body: str, needle: str) -> bool:
+    ok = needle in body
+    print(f"[{ 'OK' if ok else 'ERROR' }] {name}: contains {needle}")
+    return ok
+
+
 def main():
     checks = []
 
@@ -55,9 +61,15 @@ def main():
 
     status_code, body = request("/web")
     checks.append(show("/web", status_code, body))
+    if status_code == 200:
+        checks.append(assert_contains("/web html", body, '<link rel="stylesheet" href="/static/css/web.css">'))
+        checks.append(assert_contains("/web html", body, '<script src="/static/js/web.js" defer></script>'))
 
     status_code, body = request("/admin-web")
     checks.append(show("/admin-web", status_code, body))
+    if status_code == 200:
+        checks.append(assert_contains("/admin-web html", body, '<link rel="stylesheet" href="/static/css/admin.css">'))
+        checks.append(assert_contains("/admin-web html", body, '<script src="/static/js/admin.js" defer></script>'))
 
     status_code, body = request("/static/css/web.css")
     checks.append(show("/static/css/web.css", status_code, body))
