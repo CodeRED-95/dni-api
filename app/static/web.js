@@ -20,7 +20,6 @@ function renderMeta(data) {
     ["Apellido paterno", data.apellido_paterno || "-"],
     ["Apellido materno", data.apellido_materno || "-"],
     ["Nombre completo", data.nombre_completo || "-"],
-    ["Fuente", data.fuente || "-"],
     ["Género", data.genero || "-"],
     ["Nacimiento", data.fecha_nacimiento || "-"],
     ["Verificación", data.codigo_verificacion || "-"],
@@ -77,7 +76,7 @@ form.addEventListener("submit", async (event) => {
     resultTitle.textContent = data.nombre_completo || `DNI ${dni}`;
     renderMeta(data);
     resultBox.textContent = JSON.stringify(data, null, 2);
-    formHint.textContent = `Consulta completada correctamente. Origen: ${data.fuente || "desconocido"}.`;
+    formHint.textContent = "Consulta completada correctamente.";
   } catch {
     setState("Error", "error");
     resultTitle.textContent = "Error de conexión";

@@ -15,6 +15,32 @@ from app.services.perudevs import PeruDevsClient, PeruDevsError, PeruDevsNotFoun
 router = APIRouter(prefix="", tags=["DNI"])
 
 
+def _public_payload(record: DniConsult | dict) -> dict:
+    if isinstance(record, dict):
+        source = record
+    else:
+        source = {
+            "dni": record.dni,
+            "nombres": record.nombres,
+            "apellido_paterno": record.apellido_paterno,
+            "apellido_materno": record.apellido_materno,
+            "nombre_completo": record.nombre_completo,
+            "genero": record.genero,
+            "fecha_nacimiento": record.fecha_nacimiento,
+            "codigo_verificacion": record.codigo_verificacion,
+        }
+    return {
+        "dni": source.get("dni"),
+        "nombres": source.get("nombres"),
+        "apellido_paterno": source.get("apellido_paterno"),
+        "apellido_materno": source.get("apellido_materno"),
+        "nombre_completo": source.get("nombre_completo"),
+        "genero": source.get("genero"),
+        "fecha_nacimiento": source.get("fecha_nacimiento"),
+        "codigo_verificacion": source.get("codigo_verificacion"),
+    }
+
+
 def validate_dni(dni: str) -> str:
     normalized = (dni or "").strip()
     if not normalized.isdigit() or len(normalized) != 8:
@@ -23,7 +49,7 @@ def validate_dni(dni: str) -> str:
 
 
 def serialize(record: DniConsult) -> DniResponse:
-    return DniResponse.model_validate(record)
+    return DniResponse.model_validate(_public_payload(record))
 
 
 def save_record(db: Session, payload: dict) -> DniConsult:
@@ -65,7 +91,10 @@ def get_dni(dni: str, request: Request, db: Session = Depends(get_db), api_key=D
     cached = get_json(cache_key)
     if cached is not None:
         request.state.origen = "Redis"
-        return cached
+        public_cached = _public_payload(cached)
+        if public_cached != cached:
+            set_json(cache_key, public_cached)
+        return public_cached
 
     record = db.query(DniConsult).filter(DniConsult.dni == dni).one_or_none()
     if record:
@@ -124,4 +153,4 @@ def buscar(request: Request, nombre: str = Query(..., min_length=2), db: Session
         .order_by(DniConsult.nombre_completo.asc())
         .all()
     )
-    return results
+    return [DniSearchResult.model_validate(_public_payload(row)) for row in results]
