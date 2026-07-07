@@ -64,6 +64,8 @@ dni-api/
 - `PERUDEVS_BASE_URL`
 - `PERUDEVS_TIMEOUT`
 
+Para pruebas locales sin Docker, consulta [README_LOCAL.md](README_LOCAL.md).
+
 Ejemplo:
 
 ```env
@@ -105,6 +107,13 @@ La API quedará disponible en:
 - pgAdmin: `http://localhost:8082`
 
 ## Endpoints
+
+### `GET /status`
+Devuelve un JSON simple de salud local:
+
+```json
+{ "status": "ok", "service": "dni-api" }
+```
 
 ### `GET /health`
 Verifica API y base de datos.
@@ -202,6 +211,18 @@ Para publicar `https://dni.midominio.com` con Cloudflare Tunnel:
 6. Ejecuta el túnel con el archivo de configuración.
 
 ## Validación final
+
+Si quieres una validación local rápida sin Docker:
+
+```powershell
+python scripts\test_local.py
+```
+
+Antes de eso, levanta el servidor con:
+
+```powershell
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
 
 Ver `.env` local:
 

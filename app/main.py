@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Response
 from fastapi.responses import RedirectResponse
+from sqlalchemy.exc import SQLAlchemyError
 from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -38,7 +39,13 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 @app.on_event("startup")
 def startup() -> None:
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except SQLAlchemyError as exc:
+        raise RuntimeError(
+            "No se pudo inicializar la base de datos. Revisa DATABASE_URL. "
+            "Para desarrollo local puedes usar sqlite:///./local.db."
+        ) from exc
 
 
 @app.get("/", include_in_schema=False)
@@ -49,8 +56,24 @@ def root():
 @app.get("/health")
 def health():
     db_ok = True
+    db_error = None
+    try:
+        from app.database import ping_database
+
+        db_ok = ping_database()
+    except Exception as exc:
+        db_ok = False
+        db_error = "No se pudo comprobar la base de datos."
     redis_ok = "ok" if redis_ping() else None
-    return {"status": "ok" if db_ok else "degraded", "database": "ok" if db_ok else "fail", "redis": redis_ok}
+    payload = {"status": "ok" if db_ok else "degraded", "database": "ok" if db_ok else "fail", "redis": redis_ok}
+    if db_error:
+        payload["message"] = db_error
+    return payload
+
+
+@app.get("/status", include_in_schema=False)
+def status():
+    return {"status": "ok", "service": "dni-api"}
 
 
 @app.get("/favicon.ico", include_in_schema=False)
